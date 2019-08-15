@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chatot</title>
+        <style>
+            body {
+                    margin: 0;
+                    font-family: sans-serif;
+                }
+
+            form{
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                display: flex;
+                box-sizing: border-box;
+                padding: 1rem;
+            }
+
+            img{
+                height:75px;
+                width: auto;
+                display: block;
+                margin:0 auto;
+                padding: 5px;
+            }
+
+            .input {
+                    border: 0;
+                    padding: 0.5rem;
+                    width: 100%;
+                    outline: 0;
+                    margin-right: 0.5rem;
+                    border-radius: 2rem;
+                    background: #ccc;
+                }
+
+            .sent {
+                width: 50px;
+                height: 50px;
+                margin-right: 0;
+            }
+
+            .messages {
+                    margin: 0;
+                    padding: 1rem;
+                    margin-bottom: 3rem;
+                }
+
+                .messages div:nth-child(odd) {
+                    background: #eee;
+                }
+        </style>
+    </head>
+    <body>
+        <img src="assets/chatot.png"/>
+        <div class="messages"></div>
+        <form>
+            <input type="text" class="input" autocomplete="off" autofocus>
+            <input type="image" class="sent" src="assets/submit.png">
+        </form>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+        <script>
+            const form = document.querySelector("form");
+            const input = document.querySelector(".input");
+            const messages = document.querySelector(".messages");
+            const username = prompt("Please enter a username: ","");
+            const socket = io();
+            
+
+            form.addEventListener("submit",function(event){
+                event.preventDefault();
+
+                addMessage(username +": "+ input.value);
+
+                socket.emit("chat_message",{message: input.value});
+                input.value="";
+                return false;
+            },false);
+
+            socket.on("chat_message",function(data){
+                addMessage(data.username+": "+data.message);
+            });
+
+            socket.on("user_join",function(data){
+                addMessage(data+" joined the chat.");
+            });
+
+            socket.on("user_leave",function(data){
+               addMessage(data+" has left the chat.");
+            });
+
+            addMessage("You have joined the chat as "+username+".");
+            socket.emit("user_join",username);
+
+            function addMessage(message){
+                const li= document.createElement("div");
+                li.innerHTML=message;
+                messages.appendChild(li);
+                window.scrollTo(0,document.body.scrollHeight);
+            }
+        </script>
+    </body>
+</html>
